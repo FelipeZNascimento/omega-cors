@@ -1,4 +1,4 @@
-var sql = require('./db.js');
+var sql = require('../../sql/sql');
 
 //Task object constructor
 var Purchase = function (purchase) {

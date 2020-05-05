@@ -7,8 +7,8 @@ var connection = mysql.createConnection({
   database: process.env.SQL_DB
 });
 
-connection.connect(function(err) {
-    if (err) throw err;
+connection.connect(function (err) {
+  if (err) throw err;
 });
 
 module.exports = connection;
