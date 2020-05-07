@@ -17,7 +17,7 @@ exports.create = function (req, res) {
     if (requestParams.length < 1) {
         res.status(400).send({ error: true, message: 'No brands found.' });
     } else {
-        Brand.createBrands(requestParams, function (err, task) {
+        Brand.create(requestParams, function (err, task) {
             if (err) {
                 res.status(400).send(err);
             } else {

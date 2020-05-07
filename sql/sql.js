@@ -1,7 +1,9 @@
 var mysql = require('mysql');
-var port = process.env.PORT || 4205;
+var port = process.env.PORT || 8081;
 
-if (port === 4205) {
+console.log(port);
+
+if (port === 8081) {
   var connection = mysql.createConnection({
     host: 'localhost',
     user: 'root',
