@@ -2,6 +2,7 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var PlaceCategory = function (category) {
+    this.id = category.id,
     this.category = category.category;
     this.description = category.description;
     this.category_id = category.category_id;
@@ -9,16 +10,16 @@ var PlaceCategory = function (category) {
 
 const now = new Date();
 
-PlaceCategory.create = function (newPlacesCategories, result) {
-    const placesCategories = newPlacesCategories.map((placeCategory) => {
+PlaceCategory.create = function (newItems, result) {
+    const items = newItems.map((item) => {
         return [
-            placeCategory.description,
-            placeCategory.icon
+            item.id,
+            item.description
         ]    
     });
 
-    const query = 'INSERT INTO places_categories (description, icon) VALUES ?';
-    sql.query(query, [placesCategories], function (err, res) {
+    const query = 'INSERT INTO places_categories (id, description) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
+    sql.query(query, [items], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -32,10 +33,10 @@ PlaceCategory.getAll = function (result) {
     sql.query("SELECT * FROM places_categories", function (err, res) {
 
         if (err) {
+            console.log("error: ", err);
             result(err, null);
         }
         else {
-            console.log('tasks : ', res);
             result(null, res);
         }
     });

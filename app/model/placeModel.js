@@ -2,25 +2,25 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var Place = function (place) {
+    this.id = place.id;
     this.place = place.place;
     this.description = place.description;
-    this.categoryId = place.categoryId;
+    this.categoryId = place.category_id;
 };
 
 const now = new Date();
 
-Place.create = function (newPlaces, result) {
-    const places = newPlaces.map((place) => {
+Place.create = function (newItems, result) {
+    const items = newItems.map((item) => {
         return [
-            place.description,
-            place.categoryId
+            item.id,
+            item.description,
+            item.categoryId
         ]    
     });
 
-    console.log(places);
-
-    const query = 'INSERT INTO places (description, category_id) VALUES ?';
-    sql.query(query, [places], function (err, res) {
+    const query = 'INSERT INTO places (id, description, category_id) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
+    sql.query(query, [items], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -51,7 +51,6 @@ Place.getAll = function (result) {
                 result(err, null);
             }
             else {
-                console.log('tasks : ', res);
                 result(null, res);
             }
         });

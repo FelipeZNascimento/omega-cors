@@ -2,21 +2,27 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var Brand = function (brand) {
+    this.id = brand.id;
     this.brand = brand.brand;
     this.description = brand.description;
 };
 
 const now = new Date();
 
-Brand.create = function (newBrands, result) {
-    const brands = newBrands.map((brand) => {
+Brand.create = function (newItems, result) {
+    const items = newItems.map((item) => {
         return [
-            brand.description
+            item.id,
+            item.description
         ]    
     });
 
-    const query = 'INSERT INTO brands (description) VALUES ?';
-    sql.query(query, [brands], function (err, res) {
+    const descriptionsArray = newItems.map((item) => {
+        return item.description
+    });
+
+    const query = 'INSERT INTO brands (id, description) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
+    sql.query(query, [items, descriptionsArray], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -48,7 +54,6 @@ Brand.getAll = function (result) {
             result(err, null);
         }
         else {
-            console.log('brands : ', res);
             result(null, res);
         }
     });

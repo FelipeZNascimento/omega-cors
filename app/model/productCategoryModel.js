@@ -2,6 +2,7 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var ProductCategory = function (category) {
+    this.id = category.id;
     this.category = category.category;
     this.description = category.description;
     this.category_id = category.category_id;
@@ -9,16 +10,16 @@ var ProductCategory = function (category) {
 
 const now = new Date();
 
-ProductCategory.create = function (newProductsCategories, result) {
-    const productsCategories = newProductsCategories.map((productCategory) => {
+ProductCategory.create = function (newItems, result) {
+    const items = newItems.map((item) => {
         return [
-            productCategory.description,
-            productCategory.icon
+            item.id,
+            item.description
         ]    
     });
 
-    const query = 'INSERT INTO products_categories (description, icon) VALUES ?';
-    sql.query(query, [productsCategories], function (err, res) {
+    const query = 'INSERT INTO products_categories (id, description) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
+    sql.query(query, [items], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -35,7 +36,6 @@ ProductCategory.getAll = function (result) {
             result(err, null);
         }
         else {
-            console.log('tasks : ', res);
             result(null, res);
         }
     });

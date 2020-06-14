@@ -2,6 +2,7 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var Purchase = function (purchase) {
+    this.id = purchase.id;
     this.purchase = purchase.purchase;
     this.placeId = purchase.placeId;
     this.date = purchase.date;
@@ -72,7 +73,6 @@ Purchase.getAll = function (result) {
             console.log("error: ", err);
             result(err, null);
         } else {
-            console.log('purchases : ', res);
             result(null, res);
         }
     });

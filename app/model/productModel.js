@@ -2,25 +2,25 @@ var sql = require('../../sql/sql');
 
 //Task object constructor
 var Product = function (product) {
+    this.id = product.id;
     this.product = product.product;
     this.description = product.description;
-    this.categoryId = product.categoryId;
+    this.categoryId = product.category_id;
 };
 
 const now = new Date();
 
-Product.create = function (newProducts, result) {
-    const products = newProducts.map((product) => {
+Product.create = function (newItems, result) {
+    const items = newItems.map((item) => {
         return [
-            product.description,
-            product.categoryId
+            item.id,
+            item.description,
+            item.categoryId
         ]    
     });
 
-    console.log(products);
-
-    const query = 'INSERT INTO products (description, category_id) VALUES ?';
-    sql.query(query, [products], function (err, res) {
+    const query = 'INSERT INTO products (id, description, category_id) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
+    sql.query(query, [items], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -52,7 +52,6 @@ Product.getAll = function (result) {
                 result(err, null);
             }
             else {
-                console.log('products : ', res);
                 result(null, res);
             }
         });
