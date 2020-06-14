@@ -18,7 +18,6 @@ callBrandCreator = async function (newBrands) {
             }
         });
         
-        console.log(brandsArray);
         return brandsArray;
     });
 }
@@ -41,17 +40,14 @@ callProductCreator = async function (newPurchase, newProducts) {
         }
     });
 
-    console.log(newPurchase);
     return newPurchase;
 }
 
 exports.list_all = function (req, res) {
     Purchase.getAll(function (err, task) {
-        console.log('controller');
         if (err) {
             res.send(err);
         }
-        console.log('res', task);
         res.send(task);
     });
 };

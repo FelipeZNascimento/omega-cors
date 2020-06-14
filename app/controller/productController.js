@@ -6,7 +6,6 @@ exports.list_all = function (req, res) {
         if (err) {
             res.send(err);
         }
-        console.log('res', task);
         res.send(task);
     });
 };
