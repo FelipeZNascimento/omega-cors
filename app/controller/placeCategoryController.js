@@ -1,7 +1,17 @@
 var PlaceCategory = require('../model/placeCategoryModel.js');
 
 exports.list_all = function (req, res) {
-    PlaceCategory.getAll(function (err, task) {
+    let orderBy = req.query.orderBy;
+    if (!PlaceCategory.sortableColumns.includes(orderBy)) {
+        orderBy = PlaceCategory.sortableColumns[0];
+    }
+
+    let sortAsc = req.query.sort ? req.query.sort : 'ASC';
+    sortAsc = sortAsc.toUpperCase() === 'DESC'
+        ? 'DESC'
+        : 'ASC';
+
+    PlaceCategory.getAll(orderBy, sortAsc, function (err, task) {
         if (err) {
             res.status(400).send(err);
         } else {

@@ -6,6 +6,7 @@ module.exports = function (app) {
     var productController = require('../controller/productController');
     var productCategoryController = require('../controller/productCategoryController');
     var purchaseController = require('../controller/purchaseController');
+    var shoppingListController = require('../controller/shoppingListController');
 
     // Places Routing
     app.route('/shopping/places')
@@ -41,6 +42,14 @@ module.exports = function (app) {
         .post(productController.create);
     app.route('/shopping/products/:itemId')
         .delete(productController.delete);
+
+    // Shopping List Routing
+    app.route('/shopping/shopping_list')
+        .get(shoppingListController.list_all)
+    app.route('/shopping/shopping_list/add/:itemId')
+        .get(shoppingListController.add)
+    app.route('/shopping/shopping_list/:itemId')
+        .delete(shoppingListController.delete);
 
     // Purchases Routing
     app.route('/shopping/purchases')

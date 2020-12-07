@@ -10,6 +10,12 @@ var PlaceCategory = function (category) {
 
 const now = new Date();
 
+PlaceCategory.sortableColumns = [
+    'description',
+    'created',
+    'id'
+];
+
 PlaceCategory.create = function (newItems, result) {
     const items = newItems.map((item) => {
         return [
@@ -29,9 +35,10 @@ PlaceCategory.create = function (newItems, result) {
         }        
     });
 };
-PlaceCategory.getAll = function (result) {
-    sql.query("SELECT * FROM places_categories", function (err, res) {
+PlaceCategory.getAll = function (orderBy, sortAsc, result) {
+    const query = `SELECT * FROM places_categories ORDER BY ${orderBy} ${sortAsc}`;
 
+    sql.query(query, function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);

@@ -10,12 +10,18 @@ var ProductCategory = function (category) {
 
 const now = new Date();
 
+ProductCategory.sortableColumns = [
+    'description',
+    'created',
+    'id'
+];
+
 ProductCategory.create = function (newItems, result) {
     const items = newItems.map((item) => {
         return [
             item.id,
             item.description
-        ]    
+        ]
     });
 
     const query = 'INSERT INTO products_categories (id, description) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
@@ -26,12 +32,13 @@ ProductCategory.create = function (newItems, result) {
         } else {
             console.log('(' + now + ') Entry ' + res.insertId + ' succesfully saved at places (lines affected:' + res.affectedRows + ').');
             result(null, res);
-        }        
+        }
     });
 };
-ProductCategory.getAll = function (result) {
-    sql.query("SELECT * FROM products_categories", function (err, res) {
+ProductCategory.getAll = function (orderBy, sortAsc, result) {
+    const query = `SELECT * FROM products_categories ORDER BY ${orderBy} ${sortAsc}`;
 
+    sql.query(query, function (err, res) {
         if (err) {
             result(err, null);
         }

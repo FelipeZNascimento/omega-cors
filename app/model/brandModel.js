@@ -9,6 +9,12 @@ var Brand = function (brand) {
 
 const now = new Date();
 
+Brand.sortableColumns = [
+    'description',
+    'created',
+    'id'
+];
+
 Brand.create = function (newItems, result) {
     const items = newItems.map((item) => {
         return [
@@ -46,8 +52,10 @@ Brand.create = function (newItems, result) {
 //     });
 // };
 
-Brand.getAll = function (result) {
-    sql.query("SELECT * FROM brands", function (err, res) {
+Brand.getAll = function (orderBy, sortAsc, result) {
+    const query = `SELECT * FROM brands ORDER BY ${orderBy} ${sortAsc}`;
+
+    sql.query(query, function (err, res) {
 
         if (err) {
             console.log("error: ", err);

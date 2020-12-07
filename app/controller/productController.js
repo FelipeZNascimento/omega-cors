@@ -1,7 +1,17 @@
 var Product = require('../model/productModel.js');
 
 exports.list_all = function (req, res) {
-    Product.getAll(function (err, task) {
+    let orderBy = req.query.orderBy;
+    if (!Product.sortableColumns.includes(orderBy)) {
+        orderBy = Product.sortableColumns[0];
+    }
+
+    let sortAsc = req.query.sort ? req.query.sort : 'ASC';
+    sortAsc = sortAsc.toUpperCase() === 'DESC'
+        ? 'DESC'
+        : 'ASC';
+
+    Product.getAll(orderBy, sortAsc, function (err, task) {
         console.log('controller');
         if (err) {
             res.send(err);

@@ -10,6 +10,13 @@ var Place = function (place) {
 
 const now = new Date();
 
+Place.sortableColumns = [
+    'description',
+    'category_description',
+    'created',
+    'id'
+];
+
 Place.create = function (newItems, result) {
     const items = newItems.map((item) => {
         return [
@@ -42,9 +49,12 @@ Place.getPlaceById = function (placeId, result) {
         }
     });
 };
-Place.getAll = function (result) {
-    sql.query("SELECT places.*, places_categories.description as category_description FROM places INNER JOIN places_categories ON (places.category_id = places_categories.id)", 
-        function (err, res) {
+Place.getAll = function (orderBy, sortAsc, result) {
+    const query = `SELECT places.*, places_categories.description as category_description FROM places
+    INNER JOIN places_categories ON (places.category_id = places_categories.id)
+    ORDER BY ${orderBy} ${sortAsc}`;
+
+    sql.query(query, function (err, res) {
 
             if (err) {
                 console.log("error: ", err);

@@ -1,7 +1,17 @@
 var Brand = require('../model/brandModel.js');
 
 exports.list_all = function (req, res) {
-    Brand.getAll(function (err, task) {
+    let orderBy = req.query.orderBy;
+    if (!Brand.sortableColumns.includes(orderBy)) {
+        orderBy = Brand.sortableColumns[0];
+    }
+
+    let sortAsc = req.query.sort ? req.query.sort : 'ASC';
+    sortAsc = sortAsc.toUpperCase() === 'DESC'
+        ? 'DESC'
+        : 'ASC';
+
+    Brand.getAll(orderBy, sortAsc, function (err, task) {
         if (err) {
             res.status(400).send(err);
         } else {

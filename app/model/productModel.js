@@ -10,6 +10,13 @@ var Product = function (product) {
 
 const now = new Date();
 
+Product.sortableColumns = [
+    'description',
+    'category_description',
+    'created',
+    'id'
+];
+
 Product.create = function (newItems, result) {
     const items = newItems.map((item) => {
         return [
@@ -44,8 +51,12 @@ Product.create = function (newItems, result) {
 //     });
 // };
 
-Product.getAll = function (result) {
-    sql.query("SELECT products.*, products_categories.description as category_description FROM products INNER JOIN products_categories ON (products.category_id = products_categories.id)",         function (err, res) {
+Product.getAll = function (orderBy, sortAsc, result) {
+    const query = `SELECT products.*, products_categories.description as category_description FROM products
+        INNER JOIN products_categories ON (products.category_id = products_categories.id)
+        ORDER BY ${orderBy} ${sortAsc}`;
+
+    sql.query(query, function (err, res) {
 
             if (err) {
                 console.log("error: ", err);
