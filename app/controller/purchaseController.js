@@ -2,46 +2,46 @@ var Purchase = require('../model/purchaseModel.js');
 var Brand = require('../model/brandModel.js');
 var Product = require('../model/productModel.js');
 
-callBrandCreator = async function (newBrands) {
-    if (newBrands.length === 0) {
-        return [];
-    }
+// callBrandCreator = async function (newBrands) {
+//     if (newBrands.length === 0) {
+//         return [];
+//     }
 
-    Brand.createBrands(newBrands, function (err, task) {
-        if (err) {
-            throw new Error(err);
-        }
-        const brandsArray = newBrands.map((brand, index) => {
-            return {
-                id: task.insertId + index,
-                description: brand.description
-            }
-        });
+//     Brand.createBrands(newBrands, function (err, task) {
+//         if (err) {
+//             throw new Error(err);
+//         }
+//         const brandsArray = newBrands.map((brand, index) => {
+//             return {
+//                 id: task.insertId + index,
+//                 description: brand.description
+//             }
+//         });
         
-        return brandsArray;
-    });
-}
+//         return brandsArray;
+//     });
+// }
 
-callProductCreator = async function (newPurchase, newProducts) {
-    if (newProducts.length === 0) {
-        return newPurchase;
-    }
+// callProductCreator = async function (newPurchase, newProducts) {
+//     if (newProducts.length === 0) {
+//         return newPurchase;
+//     }
 
-    Product.createProducts(newProducts, function (err, task) {
-        if (err) {
-            throw new Error(err);
-        } else {
-            for (let i = 0; i < task.affectedRows; i++) {
-                const index = newPurchase.purchase
-                    .findIndex(line => line.product.description === newBrands[i].description);
+//     Product.createProducts(newProducts, function (err, task) {
+//         if (err) {
+//             throw new Error(err);
+//         } else {
+//             for (let i = 0; i < task.affectedRows; i++) {
+//                 const index = newPurchase.purchase
+//                     .findIndex(line => line.product.description === newBrands[i].description);
 
-                newPurchase.purchase[index].product.id = task.insertId + i;
-            }
-        }
-    });
+//                 newPurchase.purchase[index].product.id = task.insertId + i;
+//             }
+//         }
+//     });
 
-    return newPurchase;
-}
+//     return newPurchase;
+// }
 
 exports.list_all = function (req, res) {
     Purchase.getAll(function (err, task) {
