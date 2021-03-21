@@ -16,17 +16,15 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
         result("error: missing insertId", null);
     }
 
-    const products = newPurchase.map((purchase) => {
-        return [
-            insertId,
-            purchase.product.id,
-            purchase.brand !== null
-                ? purchase.brand.id
-                : 'null',
-            parseFloat(purchase.price),
-            purchase.discount
-        ]    
-    });
+    const products = newPurchase.map((purchase) => [
+        insertId,
+        purchase.product.id,
+        purchase.brand !== null
+            ? purchase.brand.id
+            : 'null',
+        parseFloat(purchase.price),
+        purchase.discount
+    ]);
 
     const query = 'INSERT INTO purchase_details (purchase_id, product_id, brand_id, price, discount) VALUES ?';
     sql.query(query, [products], function (err, res) {
@@ -36,7 +34,7 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
         } else {
             console.log('(' + now + ') Entry ' + res.insertId + ' succesfully saved at purchase_details (lines affected:' + res.affectedRows + ').');
             result(null, res);
-        }        
+        }
     });
 }
 
@@ -52,7 +50,7 @@ Purchase.create = function (newPurchase, result) {
         } else {
             console.log('(' + now + ') Entry ' + res.insertId + ' succesfully saved at purchases (lines affected:' + res.affectedRows + ').');
             return createPurchaseDetails(newPurchase.purchase, res.insertId, result);
-        }        
+        }
     });
 };
 
@@ -93,7 +91,7 @@ Purchase.remove = function (id, result) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
-        } else{
+        } else {
             result(null, res);
         }
     });
