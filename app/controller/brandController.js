@@ -6,14 +6,37 @@ exports.list_all = function (req, res) {
         orderBy = Brand.sortableColumns[0];
     }
 
-    let sortAsc = req.query.sort ? req.query.sort : 'ASC';
-    sortAsc = sortAsc.toUpperCase() === 'DESC'
+    let sort = req.query.sort ? req.query.sort : 'ASC';
+    sort = sort.toUpperCase() === 'DESC'
         ? 'DESC'
         : 'ASC';
 
-    Brand.getAll(orderBy, sortAsc, function (err, task) {
+    const page = req.query.page || 0;
+    const searchField = req.query.searchField || '';
+
+    console.log(`Fetching brands with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
+    Brand.getAll(orderBy, sort, page, searchField, function (err, task) {
         if (err) {
             res.status(400).send(err);
+        } else {
+            Brand.getTotalCount(searchField, function (err, countResult) {
+                const returnObject = {
+                    totalCount: err ? 0 : countResult,
+                    count: task.length,
+                    data: task
+                }
+
+                res.send(returnObject);
+            })
+        }
+    });
+};
+
+exports.list_all_names = function (req, res) {
+    Brand.getAllNames(function (err, task) {
+        console.log('Fetching all brand names...');
+        if (err) {
+            res.send(err);
         } else {
             res.send(task);
         }

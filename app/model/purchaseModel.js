@@ -18,15 +18,17 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
 
     const products = newPurchase.map((purchase) => [
         insertId,
-        purchase.product.id,
-        purchase.brand !== null
-            ? purchase.brand.id
-            : 'null',
+        purchase.product_id,
+        purchase.brand_id,
         parseFloat(purchase.price),
-        purchase.discount
+        parseFloat(purchase.quantity),
+        purchase.unit,
+        purchase.promotion
     ]);
 
-    const query = 'INSERT INTO purchase_details (purchase_id, product_id, brand_id, price, discount) VALUES ?';
+    console.log(products);
+
+    const query = 'INSERT INTO purchase_details (purchase_id, product_id, brand_id, price, quantity, unit, discount) VALUES ?';
     sql.query(query, [products], function (err, res) {
         if (err) {
             console.log("error: ", err);
@@ -39,7 +41,7 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
 }
 
 Purchase.create = function (newPurchase, result) {
-    console.log(newPurchase);
+    // console.log(newPurchase);
     const query = 'INSERT INTO purchases (date, place_id) VALUES (?, ?)';
     const params = [newPurchase.date, newPurchase.placeId];
 

@@ -1,4 +1,5 @@
 var sql = require('../../sql/sql');
+const CONSTANTS = require('../constants/sql');
 
 //Task object constructor
 var ShoppingList = function (product) {
@@ -16,9 +17,11 @@ ShoppingList.sortableColumns = [
     'id'
 ];
 
-ShoppingList.add = function (newItemId, result) {
+ShoppingList.create = function (newItems, result) {
+    const items = newItems.map((item) => item.id);
+
     const query = 'INSERT INTO shopping_list (product_id) VALUES (?)';
-    sql.query(query, [newItemId], function (err, res) {
+    sql.query(query, [items], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -29,17 +32,50 @@ ShoppingList.add = function (newItemId, result) {
     });
 };
 
-ShoppingList.getAll = function (orderBy, sortAsc, result) {
-    const query = `SELECT shopping_list.*,
+ShoppingList.getTotalCount = async function (searchField, result) {
+    const query = `SELECT COUNT(*) AS totalCount FROM shopping_list
+        INNER JOIN products ON (shopping_list.product_id = products.id)
+        WHERE products.description LIKE ?`;
+
+    sql.query(query, [`%${searchField}%`], function (err, countResult) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, countResult[0].totalCount);
+        }
+    });
+};
+
+ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
+    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+
+    const ascQuery = `SELECT shopping_list.*,
         products_categories.description as category_description,
         products_categories.id as category_id,
         products.description as description
         FROM shopping_list
         INNER JOIN products ON (shopping_list.product_id = products.id)
         INNER JOIN products_categories ON (category_id = products_categories.id)
-        ORDER BY ${orderBy} ${sortAsc}`;
+        WHERE products.description LIKE ? OR products_categories.description LIKE ?
+        ORDER BY ?? ASC
+        LIMIT ?, ?`;
 
-    sql.query(query, function (err, res) {
+    const descQuery = `SELECT shopping_list.*,
+        products_categories.description as category_description,
+        products_categories.id as category_id,
+        products.description as description
+        FROM shopping_list
+        INNER JOIN products ON (shopping_list.product_id = products.id)
+        INNER JOIN products_categories ON (category_id = products_categories.id)
+        WHERE products.description LIKE ? OR products_categories.description LIKE ?
+        ORDER BY ?? DESC
+        LIMIT ?, ?`;
+
+    const query = sort === 'ASC' ? ascQuery : descQuery;
+
+    sql.query(query, [`%${searchField}%`, `%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -51,8 +87,8 @@ ShoppingList.getAll = function (orderBy, sortAsc, result) {
     );
 };
 
-ShoppingList.delete = function (newItemId, result) {
-    sql.query("DELETE FROM shopping_list WHERE product_id = ?", [newItemId], function (err, res) {
+ShoppingList.delete = function (toBeDeletedId, result) {
+    sql.query("DELETE FROM shopping_list WHERE id = ?", [toBeDeletedId], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);

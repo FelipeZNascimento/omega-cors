@@ -1,4 +1,5 @@
 var sql = require('../../sql/sql');
+const CONSTANTS = require('../constants/sql');
 
 //Task object constructor
 var ProductCategory = function (category) {
@@ -35,10 +36,52 @@ ProductCategory.create = function (newItems, result) {
         }
     });
 };
-ProductCategory.getAll = function (orderBy, sortAsc, result) {
-    const query = `SELECT * FROM products_categories ORDER BY ${orderBy} ${sortAsc}`;
+
+ProductCategory.getTotalCount = async function (searchField, result) {
+    const query = `SELECT COUNT(*) AS totalCount FROM products_categories
+        WHERE description LIKE ?`;
+
+    sql.query(query, [`%${searchField}%`], function (err, countResult) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, countResult[0].totalCount);
+        }
+    });
+}
+
+ProductCategory.getAllNames = async function (result) {
+    const query = `SELECT id, description FROM products_categories
+        ORDER BY description ASC`;
 
     sql.query(query, function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, res);
+        }
+    });
+};
+
+ProductCategory.getAll = function (orderBy, sort, page, searchField, result) {
+    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+    const ascQuery = `SELECT * FROM products_categories
+            WHERE description LIKE ?
+            ORDER BY ?? ASC
+            LIMIT ?, ?`;
+
+    const descQuery = `SELECT * FROM products_categories
+            WHERE description LIKE ?
+            ORDER BY ?? DESC
+            LIMIT ?, ?`;
+
+    const query = sort === 'ASC' ? ascQuery : descQuery;
+
+    sql.query(query, [`%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             result(err, null);
         }
@@ -47,6 +90,7 @@ ProductCategory.getAll = function (orderBy, sortAsc, result) {
         }
     });
 };
+
 // ProductCategory.updateById = function (id, place, result) {
 //     sql.query("UPDATE places SET place = ? WHERE id = ?", [place.place, id], function (err, res) {
 //         if (err) {
@@ -58,6 +102,7 @@ ProductCategory.getAll = function (orderBy, sortAsc, result) {
 //         }
 //     });
 // };
+
 ProductCategory.delete = function (id, result) {
     sql.query("DELETE FROM products_categories WHERE id = ?", [id], function (err, res) {
 

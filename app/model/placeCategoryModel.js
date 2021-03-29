@@ -1,9 +1,10 @@
 var sql = require('../../sql/sql');
+const CONSTANTS = require('../constants/sql');
 
 //Task object constructor
 var PlaceCategory = function (category) {
     this.id = category.id,
-    this.category = category.category;
+        this.category = category.category;
     this.description = category.description;
     this.category_id = category.category_id;
 };
@@ -21,7 +22,7 @@ PlaceCategory.create = function (newItems, result) {
         return [
             item.id,
             item.description
-        ]    
+        ]
     });
 
     const query = 'INSERT INTO places_categories (id, description) VALUES ? ON DUPLICATE KEY UPDATE description = VALUES(description)';
@@ -32,11 +33,28 @@ PlaceCategory.create = function (newItems, result) {
         } else {
             console.log('(' + now + ') Entry ' + res.insertId + ' succesfully saved at places (lines affected:' + res.affectedRows + ').');
             result(null, res);
-        }        
+        }
     });
 };
-PlaceCategory.getAll = function (orderBy, sortAsc, result) {
-    const query = `SELECT * FROM places_categories ORDER BY ${orderBy} ${sortAsc}`;
+
+PlaceCategory.getTotalCount = async function (searchField, result) {
+    const query = `SELECT COUNT(*) AS totalCount FROM places_categories
+        WHERE description LIKE ?`;
+
+    sql.query(query, [`%${searchField}%`], function (err, countResult) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, countResult[0].totalCount);
+        }
+    });
+};
+
+PlaceCategory.getAllNames = async function (result) {
+    const query = `SELECT id, description FROM places_categories
+        ORDER BY description ASC`;
 
     sql.query(query, function (err, res) {
         if (err) {
@@ -48,6 +66,32 @@ PlaceCategory.getAll = function (orderBy, sortAsc, result) {
         }
     });
 };
+
+PlaceCategory.getAll = function (orderBy, sort, page, searchField, result) {
+    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+
+    const ascQuery = `SELECT * FROM places_categories
+        WHERE description LIKE ?
+        ORDER BY ?? ASC
+        LIMIT ?, ?`;
+
+    const descQuery = `SELECT * FROM places_categories
+        WHERE description LIKE ?
+        ORDER BY ?? DESC
+        LIMIT ?, ?`;
+
+    const query = sort === 'ASC' ? ascQuery : descQuery;
+    sql.query(query, [`%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, res);
+        }
+    });
+};
+
 PlaceCategory.updateById = function (id, place, result) {
     sql.query("UPDATE places SET place = ? WHERE id = ?", [place.place, id], function (err, res) {
         if (err) {
