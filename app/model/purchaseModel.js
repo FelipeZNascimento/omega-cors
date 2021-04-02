@@ -6,6 +6,7 @@ var Purchase = function (purchase) {
     this.purchase = purchase.purchase;
     this.placeId = purchase.placeId;
     this.date = purchase.date;
+    this.total = purchase.total;
 };
 
 const now = new Date();
@@ -26,8 +27,6 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
         purchase.promotion
     ]);
 
-    console.log(products);
-
     const query = 'INSERT INTO purchase_details (purchase_id, product_id, brand_id, price, quantity, unit, discount) VALUES ?';
     sql.query(query, [products], function (err, res) {
         if (err) {
@@ -41,9 +40,8 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
 }
 
 Purchase.create = function (newPurchase, result) {
-    // console.log(newPurchase);
-    const query = 'INSERT INTO purchases (date, place_id) VALUES (?, ?)';
-    const params = [newPurchase.date, newPurchase.placeId];
+    const query = 'INSERT INTO purchases (date, place_id, total) VALUES (?, ?, ?)';
+    const params = [newPurchase.date, newPurchase.placeId, newPurchase.total];
 
     sql.query(query, params, function (err, res) {
         if (err) {
@@ -57,7 +55,16 @@ Purchase.create = function (newPurchase, result) {
 };
 
 Purchase.getPurchaseById = function (purchaseId, result) {
-    sql.query("SELECT task FROM purchases WHERE id = ? ", purchaseId, function (err, res) {
+    console.log(`purchaseId: ${purchaseId}`)
+    const query = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id,
+        products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
+        INNER JOIN products ON products.id = purchase_details.product_id
+        INNER JOIN products_categories ON products.category_id = products_categories.id
+        LEFT JOIN brands ON brands.id = purchase_details.brand_id
+        WHERE purchase_details.purchase_id = ?
+        ORDER BY products.description ASC`;
+
+    sql.query(query, [purchaseId], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -66,8 +73,18 @@ Purchase.getPurchaseById = function (purchaseId, result) {
         }
     });
 };
+
 Purchase.getAll = function (result) {
-    sql.query("SELECT * FROM purchases", function (err, res) {
+    const query = `SELECT purchases.id, purchases.date, purchases.total,
+        places.description,
+        (SELECT COUNT(*) 
+            FROM purchase_details 
+            WHERE purchase_details.purchase_id = purchases.id) items
+        FROM purchases
+        INNER JOIN places ON places.id = purchases.place_id
+        ORDER BY purchases.date DESC`;
+
+    sql.query(query, function (err, res) {
 
         if (err) {
             console.log("error: ", err);
@@ -77,6 +94,7 @@ Purchase.getAll = function (result) {
         }
     });
 };
+
 Purchase.updateById = function (id, purchase, result) {
     sql.query("UPDATE purchases SET purchase = ? WHERE id = ?", [Purchase.purchase, id], function (err, res) {
         if (err) {
@@ -87,6 +105,7 @@ Purchase.updateById = function (id, purchase, result) {
         }
     });
 };
+
 Purchase.remove = function (id, result) {
     sql.query("DELETE FROM purchases WHERE id = ?", [id], function (err, res) {
 
