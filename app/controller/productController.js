@@ -44,7 +44,7 @@ exports.list_all_names = function (req, res) {
 };
 
 exports.create = function (req, res) {
-    var requestParams = req.body.item.map((product) => new Product(product));
+    var requestParams = req.body.itemArray.map((product) => new Product(product));
 
     //handles null error 
     if (requestParams.length < 1) {
