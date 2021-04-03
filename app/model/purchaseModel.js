@@ -11,6 +11,12 @@ var Purchase = function (purchase) {
 
 const now = new Date();
 
+Purchase.sortableColumns = [
+    'description',
+    'category_description',
+    'price'
+];
+
 createPurchaseDetails = function (newPurchase, insertId, result) {
     if (!insertId) {
         console.log("error: missing insertId");
@@ -54,17 +60,26 @@ Purchase.create = function (newPurchase, result) {
     });
 };
 
-Purchase.getPurchaseById = function (purchaseId, result) {
+Purchase.getPurchaseById = function (purchaseId, orderBy, sort, result) {
     console.log(`purchaseId: ${purchaseId}`)
-    const query = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id,
+    const ascQuery = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id,
         products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
         INNER JOIN products ON products.id = purchase_details.product_id
         INNER JOIN products_categories ON products.category_id = products_categories.id
         LEFT JOIN brands ON brands.id = purchase_details.brand_id
         WHERE purchase_details.purchase_id = ?
-        ORDER BY products.description ASC`;
+        ORDER BY ?? ASC`;
 
-    sql.query(query, [purchaseId], function (err, res) {
+    const descQuery = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id,
+        products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
+        INNER JOIN products ON products.id = purchase_details.product_id
+        INNER JOIN products_categories ON products.category_id = products_categories.id
+        LEFT JOIN brands ON brands.id = purchase_details.brand_id
+        WHERE purchase_details.purchase_id = ?
+        ORDER BY ?? DESC`;
+
+    const query = sort === 'ASC' ? ascQuery : descQuery;
+    sql.query(query, [purchaseId, orderBy], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
