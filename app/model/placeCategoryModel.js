@@ -68,7 +68,9 @@ PlaceCategory.getAllNames = async function (result) {
 };
 
 PlaceCategory.getAll = function (orderBy, sort, page, searchField, result) {
-    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+    const firstElement = page === 'null' ? 0 : page * CONSTANTS.PAGINATION_OFFSET;
+    const paginationOffset = page === 'null' ? 9999999999999 : CONSTANTS.PAGINATION_OFFSET;
+    const description = searchField || '';
 
     const ascQuery = `SELECT * FROM places_categories
         WHERE description LIKE ?
@@ -81,7 +83,7 @@ PlaceCategory.getAll = function (orderBy, sort, page, searchField, result) {
         LIMIT ?, ?`;
 
     const query = sort === 'ASC' ? ascQuery : descQuery;
-    sql.query(query, [`%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+    sql.query(query, [`%${description}%`, orderBy, firstElement, paginationOffset], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
