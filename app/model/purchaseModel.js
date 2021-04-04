@@ -31,7 +31,7 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
         parseFloat(purchase.quantity),
         purchase.unit,
         purchase.promotion,
-        purchase.details
+        purchase.details || ''
     ]);
 
     const query = 'INSERT INTO purchase_details (purchase_id, product_id, brand_id, price, quantity, unit, discount, details) VALUES ?';
