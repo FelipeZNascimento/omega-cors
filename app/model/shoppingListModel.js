@@ -59,8 +59,7 @@ ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
         INNER JOIN products ON (shopping_list.product_id = products.id)
         INNER JOIN products_categories ON (category_id = products_categories.id)
         WHERE products.description LIKE ? OR products_categories.description LIKE ?
-        ORDER BY ?? ASC
-        LIMIT ?, ?`;
+        ORDER BY ?? ASC`;
 
     const descQuery = `SELECT shopping_list.*,
         products_categories.description as category_description,
@@ -70,8 +69,7 @@ ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
         INNER JOIN products ON (shopping_list.product_id = products.id)
         INNER JOIN products_categories ON (category_id = products_categories.id)
         WHERE products.description LIKE ? OR products_categories.description LIKE ?
-        ORDER BY ?? DESC
-        LIMIT ?, ?`;
+        ORDER BY ?? DESC`;
 
     const query = sort === 'ASC' ? ascQuery : descQuery;
 
