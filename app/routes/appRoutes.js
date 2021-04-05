@@ -52,6 +52,8 @@ module.exports = function (app) {
         .delete(productController.delete);
     app.route('/shopping/product_names')
         .get(productController.list_all_names);
+    app.route('/shopping/product/:itemId')
+        .get(productController.get_history_by_id);
 
     // Shopping List Routing
     app.route('/shopping/shopping_list')

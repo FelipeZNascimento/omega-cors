@@ -74,3 +74,41 @@ exports.delete = function (req, res) {
         });
     }
 };
+
+exports.get_history_by_id = function (req, res) {
+    const productId = req.params.itemId;
+    if (!productId) {
+        res.status(400).send({ error: true, message: 'Missing query param: product id' });
+    } else {
+        let orderBy = req.query.orderBy;
+        if (!Product.sortableColumns.includes(orderBy)) {
+            orderBy = Product.sortableColumns[4];
+        }
+
+        let sort = req.query.sort || 'ASC';
+        sort = sort.toUpperCase() === 'DESC'
+            ? 'DESC'
+            : 'ASC';
+
+        console.log(`Fetching product with orderBy = ${orderBy}, sort: ${sort}`);
+        Product.getHistoryById(productId, orderBy, sort, function (err, task) {
+            if (err) {
+                res.send(err);
+            } else {
+                Product.getById(productId, function (err, productInfo) {
+                    console.log(productId);
+                    if (err) {
+                        res.send(err);
+                    } else {
+                        const returnObject = {
+                            productInfo: productInfo,
+                            data: task
+                        }
+
+                        res.send(returnObject);
+                    }
+                });
+            }
+        });
+    }
+};

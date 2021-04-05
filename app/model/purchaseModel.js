@@ -30,7 +30,7 @@ createPurchaseDetails = function (newPurchase, insertId, result) {
         parseFloat(purchase.price),
         parseFloat(purchase.quantity),
         purchase.unit,
-        purchase.promotion,
+        purchase.discount || false,
         purchase.details || ''
     ]);
 
@@ -61,10 +61,9 @@ Purchase.create = function (newPurchase, result) {
     });
 };
 
-Purchase.getPurchaseById = function (purchaseId, orderBy, sort, result) {
-    console.log(`purchaseId: ${purchaseId}`)
+Purchase.getById = function (purchaseId, orderBy, sort, result) {
     const ascQuery = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id, purchase_details.details,
-        products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
+        products.id as product_id, products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
         INNER JOIN products ON products.id = purchase_details.product_id
         INNER JOIN products_categories ON products.category_id = products_categories.id
         LEFT JOIN brands ON brands.id = purchase_details.brand_id
@@ -72,7 +71,7 @@ Purchase.getPurchaseById = function (purchaseId, orderBy, sort, result) {
         ORDER BY ?? ASC`;
 
     const descQuery = `SELECT purchase_details.price, purchase_details.quantity, purchase_details.unit, purchase_details.discount, purchase_details.brand_id, purchase_details.details,
-        products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
+        products.id as product_id, products.description, products.category_id, products.id, brands.description as brand_description, products_categories.description as category_description FROM purchase_details
         INNER JOIN products ON products.id = purchase_details.product_id
         INNER JOIN products_categories ON products.category_id = products_categories.id
         LEFT JOIN brands ON brands.id = purchase_details.brand_id

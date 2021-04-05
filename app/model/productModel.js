@@ -15,7 +15,8 @@ Product.sortableColumns = [
     'description',
     'category_description',
     'created',
-    'id'
+    'id',
+    'price'
 ];
 
 Product.create = function (newItems, result) {
@@ -39,18 +40,61 @@ Product.create = function (newItems, result) {
     });
 };
 
-// Product.getProductById = function (productId, result) {
-//     sql.query("SELECT product FROM products WHERE id = ? ", productId, function (err, res) {
-//         if (err) {
-//             console.log("error: ", err);
-//             result(err, null);
-//         }
-//         else {
-//             result(null, res);
+Product.getById = function (productId, result) {
+    const query = `SELECT products.id, products.description, products.created,
+        products_categories.description as categoryDescription FROM products
+        INNER JOIN products_categories ON (products.category_id = products_categories.id)
+        WHERE products.id = ?`;
 
-//         }
-//     });
-// };
+    sql.query(query, [productId], function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        }
+        else {
+            result(null, res);
+        }
+    });
+};
+
+Product.getHistoryById = function (productId, orderBy, sort, result) {
+    const ascQuery = `SELECT purchase_details.price, purchase_details.discount, purchase_details.unit,
+        purchase_details.brand_id as brandId, purchases.place_id as placeId, products_categories.id as categoryId,
+        products.description, products_categories.description as categoryDescription,
+        places.description as placeDescription,
+        purchases.date, brands.description as brandDescription FROM purchase_details
+        INNER JOIN products ON (products.id = purchase_details.product_id)
+        INNER JOIN products_categories ON (products_categories.id = products.category_id)
+        INNER JOIN purchases ON (purchases.id = purchase_details.purchase_id)
+        INNER JOIN places ON (places.id = purchases.place_id)
+        LEFT JOIN brands ON (brands.id = purchase_details.brand_id)
+        WHERE purchase_details.product_id = ?
+        ORDER BY ?? ASC`;
+
+    const descQuery = `SELECT purchase_details.price, purchase_details.discount, purchase_details.unit,
+    purchase_details.brand_id as brandId, purchases.place_id as placeId, products_categories.id as categoryId,
+        products.description, products_categories.description as categoryDescription,
+        places.description as placeDescription,
+        purchases.date, brands.description as brandDescription FROM purchase_details
+        INNER JOIN products ON (products.id = purchase_details.product_id)
+        INNER JOIN products_categories ON (products_categories.id = products.category_id)
+        INNER JOIN purchases ON (purchases.id = purchase_details.purchase_id)
+        INNER JOIN places ON (places.id = purchases.place_id)
+        LEFT JOIN brands ON (brands.id = purchase_details.brand_id)
+        WHERE purchase_details.product_id = ?
+        ORDER BY ?? DESC`;
+
+    const query = sort === 'ASC' ? ascQuery : descQuery;
+    sql.query(query, [productId, orderBy], function (err, res) {
+        if (err) {
+            console.log("error: ", err);
+            result(err, null);
+        } else {
+            result(null, res);
+        }
+    });
+};
+
 Product.getTotalCount = async function (searchField, result) {
     const query = `SELECT COUNT(*) AS totalCount FROM products
         INNER JOIN products_categories ON (products.category_id = products_categories.id)

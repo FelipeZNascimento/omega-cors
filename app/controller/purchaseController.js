@@ -36,7 +36,7 @@ exports.create = async function (req, res) {
 
 exports.get_by_id = async function (req, res) {
     if (!req.params.itemId) {
-        res.status(400).send({ error: true, message: 'No purchase id found.' });
+        res.status(400).send({ error: true, message: 'Missing query param: purchase id' });
     } else {
         let orderBy = req.query.orderBy;
         if (!Purchase.sortableColumns.includes(orderBy)) {
@@ -50,7 +50,7 @@ exports.get_by_id = async function (req, res) {
 
         console.log(`Fetching purchase with orderBy = ${orderBy}, sort: ${sort}`);
 
-        Purchase.getPurchaseById(req.params.itemId, orderBy, sort, function (err, task) {
+        Purchase.getById(req.params.itemId, orderBy, sort, function (err, task) {
             if (err) {
                 res.send(err);
             } else {
