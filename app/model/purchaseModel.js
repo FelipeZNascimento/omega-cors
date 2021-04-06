@@ -91,12 +91,14 @@ Purchase.getById = function (purchaseId, orderBy, sort, result) {
 
 Purchase.getAll = function (result) {
     const query = `SELECT purchases.id, purchases.date, purchases.total,
-        places.description,
+        places.description, places_categories.description as categoryDescription,
+        places_categories.id as categoryId,
         (SELECT COUNT(*) 
             FROM purchase_details 
             WHERE purchase_details.purchase_id = purchases.id) items
         FROM purchases
         INNER JOIN places ON places.id = purchases.place_id
+        INNER JOIN places_categories ON places_categories.id = places.category_id
         ORDER BY purchases.date DESC`;
 
     sql.query(query, function (err, res) {

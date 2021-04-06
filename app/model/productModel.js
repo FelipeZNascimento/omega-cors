@@ -16,7 +16,9 @@ Product.sortableColumns = [
     'category_description',
     'created',
     'id',
-    'price'
+    'price',
+    'place',
+    'date'
 ];
 
 Product.create = function (newItems, result) {
@@ -84,8 +86,9 @@ Product.getHistoryById = function (productId, orderBy, sort, result) {
         WHERE purchase_details.product_id = ?
         ORDER BY ?? DESC`;
 
+    const mappedOrderBy = orderBy === 'place' ? 'placeDescription' : orderBy;
     const query = sort === 'ASC' ? ascQuery : descQuery;
-    sql.query(query, [productId, orderBy], function (err, res) {
+    sql.query(query, [productId, mappedOrderBy], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
