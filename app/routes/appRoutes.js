@@ -58,7 +58,8 @@ module.exports = function (app) {
     // Shopping List Routing
     app.route('/shopping/shopping_list')
         .get(shoppingListController.list_all)
-        .post(shoppingListController.create);
+        .post(shoppingListController.create)
+        .delete(shoppingListController.delete);
     app.route('/shopping/shopping_list/:itemId')
         .delete(shoppingListController.delete);
 

@@ -86,15 +86,27 @@ ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
 };
 
 ShoppingList.delete = function (toBeDeletedId, result) {
-    sql.query("DELETE FROM shopping_list WHERE id = ?", [toBeDeletedId], function (err, res) {
-        if (err) {
-            console.log("error: ", err);
-            result(err, null);
-        }
-        else {
-            result(null, res);
-        }
-    });
+    if (toBeDeletedId === 'null') {
+        sql.query("TRUNCATE shopping_list", function (err, res) {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else {
+                result(null, res);
+            }
+        });
+    } else {
+        sql.query("DELETE FROM shopping_list WHERE id = ?", [toBeDeletedId], function (err, res) {
+            if (err) {
+                console.log("error: ", err);
+                result(err, null);
+            }
+            else {
+                result(null, res);
+            }
+        });   
+    }
 };
 
 module.exports = ShoppingList;

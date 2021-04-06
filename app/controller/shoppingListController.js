@@ -16,7 +16,6 @@ exports.list_all = function (req, res) {
     const searchField = req.query.searchField || '';
 
     ShoppingList.getAll(orderBy, sort, page, searchField, function (err, task) {
-        console.log('controller');
         if (err) {
             res.send(err);
         } else {
@@ -50,15 +49,12 @@ exports.create = function (req, res) {
 };
 
 exports.delete = function (req, res) {
-    console.log("Deleting a product...(" + req.params.itemId + ")");
-    if (!req.params.itemId) {
-        res.status(400).send({ error: true, message: 'No product id found.' });
-    } else {
-        ShoppingList.delete(req.params.itemId, function (err, task) {
-            if (err) {
-                res.status(409).send(err);
-            }
-            res.send(task);
-        });
-    }
+    const { itemId } = req.params;
+    console.log("Deleting a product from shopping list...(" + itemId + ")");
+    ShoppingList.delete(itemId, function (err, task) {
+        if (err) {
+            res.status(409).send(err);
+        }
+        res.send(task);
+    });
 };
