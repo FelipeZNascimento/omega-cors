@@ -12,10 +12,21 @@ const now = new Date();
 
 ShoppingList.sortableColumns = [
     'description',
-    'category_description',
+    'category',
     'created',
     'id'
 ];
+
+const mapSortables = (orderBy) => {
+    switch(orderBy) {
+        case 'category':
+            return 'categoryDescription';
+        case 'id':
+            return 'id';
+        default:
+            return `products.${orderBy}`;
+    }
+};
 
 ShoppingList.create = function (newItems, result) {
     const items = newItems.map((item) => item.id);
@@ -51,29 +62,18 @@ ShoppingList.getTotalCount = async function (searchField, result) {
 ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
     const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
 
-    const ascQuery = `SELECT shopping_list.*,
-        products_categories.description as category_description,
-        products_categories.id as category_id,
-        products.description as description
+    const query = `SELECT shopping_list.id, shopping_list.created,
+        products_categories.description as categoryDescription, products_categories.id as categoryId,
+        products_categories.created as categoryCreated,
+        products.id as productId, products.description as productDescription, products.created as productCreated
         FROM shopping_list
         INNER JOIN products ON (shopping_list.product_id = products.id)
         INNER JOIN products_categories ON (category_id = products_categories.id)
         WHERE products.description LIKE ? OR products_categories.description LIKE ?
-        ORDER BY ?? ASC`;
+        ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}`;
 
-    const descQuery = `SELECT shopping_list.*,
-        products_categories.description as category_description,
-        products_categories.id as category_id,
-        products.description as description
-        FROM shopping_list
-        INNER JOIN products ON (shopping_list.product_id = products.id)
-        INNER JOIN products_categories ON (category_id = products_categories.id)
-        WHERE products.description LIKE ? OR products_categories.description LIKE ?
-        ORDER BY ?? DESC`;
-
-    const query = sort === 'ASC' ? ascQuery : descQuery;
-
-    sql.query(query, [`%${searchField}%`, `%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+    let mappedOrderBy = mapSortables(orderBy);
+    sql.query(query, [`%${searchField}%`, `%${searchField}%`, mappedOrderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
@@ -105,7 +105,7 @@ ShoppingList.delete = function (toBeDeletedId, result) {
             else {
                 result(null, res);
             }
-        });   
+        });
     }
 };
 

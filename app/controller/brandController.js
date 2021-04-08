@@ -1,20 +1,13 @@
 var Brand = require('../model/brandModel.js');
 
-exports.list_all = function (req, res) {
-    let orderBy = req.query.orderBy;
-    if (!Brand.sortableColumns.includes(orderBy)) {
-        orderBy = Brand.sortableColumns[0];
-    }
-
-    let sort = req.query.sort ? req.query.sort : 'ASC';
-    sort = sort.toUpperCase() === 'DESC'
-        ? 'DESC'
-        : 'ASC';
-
-    const page = req.query.page || 0;
-    const searchField = req.query.searchField || '';
-
+const fetchAll = ({
+    orderBy = Brand.sortableColumns[0],
+    sort = 'ASC',
+    page = 0,
+    searchField = ''
+}, res) => {
     console.log(`Fetching brands with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
+
     Brand.getAll(orderBy, sort, page, searchField, function (err, task) {
         if (err) {
             res.status(400).send(err);
@@ -30,6 +23,23 @@ exports.list_all = function (req, res) {
             })
         }
     });
+};
+
+exports.list_all = function (req, res) {
+    let orderBy = req.query.orderBy;
+    if (!Brand.sortableColumns.includes(orderBy)) {
+        orderBy = Brand.sortableColumns[0];
+    }
+
+    let sort = req.query.sort ? req.query.sort : 'ASC';
+    sort = sort.toUpperCase() === 'DESC'
+        ? 'DESC'
+        : 'ASC';
+
+    const page = req.query.page || 0;
+    const searchField = req.query.searchField || '';
+
+    return fetchAll({ orderBy, sort, page, searchField }, res);
 };
 
 exports.list_all_names = function (req, res) {
@@ -54,7 +64,20 @@ exports.create = function (req, res) {
             if (err) {
                 res.status(400).send(err);
             } else {
-                res.json(task);
+                let orderBy = req.query.orderBy;
+                if (!Brand.sortableColumns.includes(orderBy)) {
+                    orderBy = Brand.sortableColumns[0];
+                }
+
+                let sort = req.query.sort ? req.query.sort : 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
@@ -68,19 +91,24 @@ exports.delete = function (req, res) {
             if (err) {
                 res.status(409).send(err);
             } else {
-                res.json({ message: 'Brand successfully deleted.' });
+                let orderBy = req.query.orderBy;
+                if (!Brand.sortableColumns.includes(orderBy)) {
+                    orderBy = Brand.sortableColumns[0];
+                }
+
+                let sort = req.query.sort ? req.query.sort : 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
 };
-
-// exports.read_a_task = function (req, res) {
-//     Place.getTaskById(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json(task);
-//     });
-// };
 
 // exports.update_a_task = function (req, res) {
 //     Place.updateById(req.params.taskId, new Task(req.body), function (err, task) {
@@ -89,4 +117,3 @@ exports.delete = function (req, res) {
 //         res.json(task);
 //     });
 // };
-

@@ -3,10 +3,10 @@ const CONSTANTS = require('../constants/sql');
 
 //Task object constructor
 var PlaceCategory = function (category) {
-    this.id = category.id,
-        this.category = category.category;
+    this.category = category.category;
+    this.id = category.id;
     this.description = category.description;
-    this.category_id = category.category_id;
+    this.created = category.created;
 };
 
 const now = new Date();
@@ -72,17 +72,11 @@ PlaceCategory.getAll = function (orderBy, sort, page, searchField, result) {
     const paginationOffset = page === 'null' ? 9999999999999 : CONSTANTS.PAGINATION_OFFSET;
     const description = searchField || '';
 
-    const ascQuery = `SELECT * FROM places_categories
+    const query = `SELECT * FROM places_categories
         WHERE description LIKE ?
-        ORDER BY ?? ASC
+        ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}
         LIMIT ?, ?`;
 
-    const descQuery = `SELECT * FROM places_categories
-        WHERE description LIKE ?
-        ORDER BY ?? DESC
-        LIMIT ?, ?`;
-
-    const query = sort === 'ASC' ? ascQuery : descQuery;
     sql.query(query, [`%${description}%`, orderBy, firstElement, paginationOffset], function (err, res) {
         if (err) {
             console.log("error: ", err);

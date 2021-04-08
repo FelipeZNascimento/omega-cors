@@ -1,5 +1,36 @@
 var Place = require('../model/placeModel.js');
 
+const fetchAll = ({
+    orderBy = Place.sortableColumns[0],
+    sort = 'ASC',
+    page = 0,
+    searchField = ''
+}, res) => {
+    console.log(`Fetching places with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
+    Place.getAll(orderBy, sort, page, searchField, function (err, data) {
+        if (err) {
+            res.status(400).send(err);
+        } else {
+            Place.getTotalCount(searchField, function (err, countResult) {
+                const returnObject = {
+                    totalCount: err ? 0 : countResult,
+                    data: data.map((item) => ({
+                        id: item.id,
+                        description: item.description,
+                        created: item.created,
+                        category: {
+                            id: item.categoryId,
+                            description: item.categoryDescription,
+                            created: item.categoryCreated
+                        }
+                    }))
+                }
+                res.send(returnObject);
+            });
+        }
+    });
+};
+
 exports.list_all = function (req, res) {
     let orderBy = req.query.orderBy;
     if (!Place.sortableColumns.includes(orderBy)) {
@@ -14,22 +45,7 @@ exports.list_all = function (req, res) {
     const page = req.query.page || 0;
     const searchField = req.query.searchField || '';
 
-    console.log(`Fetching places with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
-    Place.getAll(orderBy, sort, page, searchField, function (err, task) {
-        if (err) {
-            res.status(400).send(err);
-        } else {
-            Place.getTotalCount(searchField, function (err, countResult) {
-                const returnObject = {
-                    totalCount: err ? 0 : countResult,
-                    count: task.length,
-                    data: task
-                }
-
-                res.send(returnObject);
-            });
-        }
-    });
+    return fetchAll({ orderBy, sort, page, searchField }, res);
 };
 
 exports.list_all_names = function (req, res) {
@@ -54,7 +70,20 @@ exports.create = function (req, res) {
             if (err) {
                 res.status(400).send(err);
             } else {
-                res.json(task);
+                let orderBy = req.query.orderBy;
+                if (!Place.sortableColumns.includes(orderBy)) {
+                    orderBy = Place.sortableColumns[0];
+                }
+
+                let sort = req.query.sort || 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
@@ -69,49 +98,29 @@ exports.delete = function (req, res) {
             if (err) {
                 res.status(409).send(err);
             } else {
-                res.json({ message: 'Place successfully deleted.' });
+                let orderBy = req.query.orderBy;
+                if (!Place.sortableColumns.includes(orderBy)) {
+                    orderBy = Place.sortableColumns[0];
+                }
+
+                let sort = req.query.sort || 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
 };
-
-// exports.create_a_task = function (req, res) {
-//     var new_task = new Place(req.body);
-
-//     //handles null error 
-//     if (!new_task.task || !new_task.status) {
-//         res.status(400).send({ error: true, message: 'Please provide task/status' });
-//     }
-//     else {
-
-//         Place.createTask(new_task, function (err, task) {
-//             if (err)
-//                 res.send(err);
-//             res.json(task);
-//         });
-//     }
-// };
-
-// exports.read_a_task = function (req, res) {
-//     Place.getTaskById(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json(task);
-//     });
-// };
 
 // exports.update_a_task = function (req, res) {
 //     Place.updateById(req.params.taskId, new Task(req.body), function (err, task) {
 //         if (err)
 //             res.send(err);
 //         res.json(task);
-//     });
-// };
-
-// exports.delete_a_task = function (req, res) {
-//     Place.remove(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json({ message: 'Task successfully deleted' });
 //     });
 // };

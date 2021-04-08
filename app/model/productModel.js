@@ -1,19 +1,21 @@
 var sql = require('../../sql/sql');
 const CONSTANTS = require('../constants/sql');
+var ProductCategory = require('../model/productCategoryModel.js');
 
 //Task object constructor
 var Product = function (product) {
-    this.id = product.id;
     this.product = product.product;
+    this.id = product.id;
     this.description = product.description;
-    this.categoryId = product.category_id;
+    this.created = product.created;
+    this.category = new ProductCategory(product.category);
 };
 
 const now = new Date();
 
 Product.sortableColumns = [
     'description',
-    'category_description',
+    'category',
     'created',
     'id',
     'price',
@@ -26,7 +28,7 @@ Product.create = function (newItems, result) {
         return [
             item.id,
             item.description,
-            item.categoryId
+            item.category.id
         ]
     });
 
@@ -43,8 +45,8 @@ Product.create = function (newItems, result) {
 };
 
 Product.getById = function (productId, result) {
-    const query = `SELECT products.id, products.description, products.created,
-        products_categories.description as categoryDescription FROM products
+    const query = `SELECT products.id, products.description, products.created, products.category_id as categoryId,
+        products_categories.description as categoryDescription, products_categories.created as categoryCreated FROM products
         INNER JOIN products_categories ON (products.category_id = products_categories.id)
         WHERE products.id = ?`;
 
@@ -60,34 +62,23 @@ Product.getById = function (productId, result) {
 };
 
 Product.getHistoryById = function (productId, orderBy, sort, result) {
-    const ascQuery = `SELECT purchase_details.price, purchase_details.discount, purchase_details.unit,
-        purchase_details.brand_id as brandId, purchases.place_id as placeId, products_categories.id as categoryId,
-        products.description, products_categories.description as categoryDescription,
-        places.description as placeDescription,
-        purchases.date, brands.description as brandDescription FROM purchase_details
+    const query = `SELECT purchase_details.id, purchase_details.price, purchase_details.discount, purchase_details.unit,
+        products.description as productDescription, products.id as productId, products.created as productCreated, 
+        products_categories.id as productCategoryId, products_categories.description as productCategoryDescription, products_categories.created as productCategoryCreated,
+        brands.id as brandId, brands.description as brandDescription, brands.created as brandCreated, 
+        places.id as placeId, places.description as placeDescription, places.created as placeCreated,
+        places_categories.id as placeCategoryId, places_categories.description as placeCategoryDescription, places_categories.created as placeCategoryCreated,
+        purchases.date FROM purchase_details
         INNER JOIN products ON (products.id = purchase_details.product_id)
         INNER JOIN products_categories ON (products_categories.id = products.category_id)
         INNER JOIN purchases ON (purchases.id = purchase_details.purchase_id)
         INNER JOIN places ON (places.id = purchases.place_id)
+        INNER JOIN places_categories ON (places_categories.id = places.category_id)
         LEFT JOIN brands ON (brands.id = purchase_details.brand_id)
         WHERE purchase_details.product_id = ?
-        ORDER BY ?? ASC`;
-
-    const descQuery = `SELECT purchase_details.price, purchase_details.discount, purchase_details.unit,
-    purchase_details.brand_id as brandId, purchases.place_id as placeId, products_categories.id as categoryId,
-        products.description, products_categories.description as categoryDescription,
-        places.description as placeDescription,
-        purchases.date, brands.description as brandDescription FROM purchase_details
-        INNER JOIN products ON (products.id = purchase_details.product_id)
-        INNER JOIN products_categories ON (products_categories.id = products.category_id)
-        INNER JOIN purchases ON (purchases.id = purchase_details.purchase_id)
-        INNER JOIN places ON (places.id = purchases.place_id)
-        LEFT JOIN brands ON (brands.id = purchase_details.brand_id)
-        WHERE purchase_details.product_id = ?
-        ORDER BY ?? DESC`;
+        ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}`;
 
     const mappedOrderBy = orderBy === 'place' ? 'placeDescription' : orderBy;
-    const query = sort === 'ASC' ? ascQuery : descQuery;
     sql.query(query, [productId, mappedOrderBy], function (err, res) {
         if (err) {
             console.log("error: ", err);
@@ -131,20 +122,15 @@ Product.getAllNames = async function (result) {
 
 Product.getAll = async function (orderBy, sort, page, searchField, result) {
     const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
-    const ascQuery = `SELECT products.*, products_categories.description as category_description FROM products
+    const query = `SELECT products.id, products.description, products.created, products.category_id as categoryId,
+            products_categories.description as categoryDescription, products_categories.created as categoryCreated FROM products
             INNER JOIN products_categories ON (products.category_id = products_categories.id)
             WHERE products.description LIKE ? OR products_categories.description LIKE ?
-            ORDER BY ?? ASC
+            ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}
             LIMIT ?, ?`;
 
-    const descQuery = `SELECT products.*, products_categories.description as category_description FROM products
-            INNER JOIN products_categories ON (products.category_id = products_categories.id)
-            WHERE products.description LIKE ? OR products_categories.description LIKE ?
-            ORDER BY ?? DESC
-            LIMIT ?, ?`;
-
-    const query = sort === 'ASC' ? ascQuery : descQuery;
-    sql.query(query, [`%${searchField}%`, `%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+    const mappedOrderBy = orderBy === 'category' ? 'categoryDescription' : orderBy;
+    sql.query(query, [`%${searchField}%`, `%${searchField}%`, mappedOrderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);

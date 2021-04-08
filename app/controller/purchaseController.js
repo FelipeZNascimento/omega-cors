@@ -1,27 +1,52 @@
 var Purchase = require('../model/purchaseModel.js');
+var Place = require('../model/placeModel.js');
 
 exports.list_all = function (req, res) {
-    Purchase.getAll(function (err, task) {
+    Purchase.getAll(function (err, data) {
         if (err) {
             res.send(err);
         }
-        res.send(task);
+
+        const returnObject = {
+            data: data.map((item) => ({
+                numberOfItems: item.numberOfItems,
+                id: item.id,
+                date: item.date,
+                total: item.total,
+                created: item.created,
+                place: {
+                    id: item.placeId,
+                    description: item.placeDescription,
+                    created: item.placeCreated,
+                    category: {
+                        id: item.categoryId,
+                        description: item.categoryDescription,
+                        created: item.categoryCreated
+                    }
+                }
+            }))
+        }
+
+        res.send(returnObject);
     });
 };
 
 exports.create = async function (req, res) {
-    let newPurchase = new Purchase(req.body);
+    const { date, total } = req.body;
 
-    if (newPurchase.purchase.length < 1) {
+    const place = new Place(req.body.place);
+    const purchaseItems = req.body.purchaseItems.map((purchase) => new Purchase(purchase));
+
+    if (purchaseItems.length < 1) {
         res.status(400).send({ error: true, message: 'No purchase found.' });
-    } else if (newPurchase.place_id === null || newPurchase.place_id === '') {
+    } else if (place.id === null || place.id === '') {
         res.status(400).send({ error: true, message: 'Please fill all mandatory fields (place)' });
-    } else if (newPurchase.date === null || newPurchase.date === '') {
+    } else if (date === null || date === '') {
         res.status(400).send({ error: true, message: 'Please fill all mandatory fields (date)' });
     } else {
 
         try {
-            Purchase.create(newPurchase, function (err, task) {
+            Purchase.create(date, place, total, purchaseItems, function (err, task) {
                 if (err) {
                     res.send(err);
                 } else {
@@ -34,8 +59,9 @@ exports.create = async function (req, res) {
     }
 };
 
-exports.get_by_id = async function (req, res) {
-    if (!req.params.itemId) {
+exports.get_details_by_id = async function (req, res) {
+    const purchaseId = req.params.itemId;
+    if (!purchaseId) {
         res.status(400).send({ error: true, message: 'Missing query param: purchase id' });
     } else {
         let orderBy = req.query.orderBy;
@@ -50,35 +76,45 @@ exports.get_by_id = async function (req, res) {
 
         console.log(`Fetching purchase with orderBy = ${orderBy}, sort: ${sort}`);
 
-        Purchase.getById(req.params.itemId, orderBy, sort, function (err, task) {
+        Purchase.getDetailsById(purchaseId, orderBy, sort, function (err, data) {
             if (err) {
                 res.send(err);
             } else {
-                res.json(task);
+                const returnObject = {
+                    id: purchaseId,
+                    data: data.map((item) => ({
+                        price: item.price,
+                        quantity: item.quantity,
+                        unit: item.unit,
+                        discount: item.discount,
+                        details: item.details,
+                        brand: item.brandId ? {
+                            id: item.brandId,
+                            description: item.brandDescription,
+                            created: item.brandCreated
+                        } : null,
+                        product: {
+                            id: item.productId,
+                            description: item.productDescription,
+                            created: item.productCreated,
+                            category: {
+                                id: item.categoryId,
+                                description: item.categoryDescription,
+                                created: item.categoryCreated
+                            }
+                        },
+                    }))
+                }
+
+                res.send(returnObject);
             }
         });
     }
 };
-// exports.read_a_task = function (req, res) {
-//     Place.getTaskById(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json(task);
-//     });
-// };
-
 // exports.update_a_task = function (req, res) {
 //     Place.updateById(req.params.taskId, new Task(req.body), function (err, task) {
 //         if (err)
 //             res.send(err);
 //         res.json(task);
-//     });
-// };
-
-// exports.delete_a_task = function (req, res) {
-//     Place.remove(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json({ message: 'Task successfully deleted' });
 //     });
 // };

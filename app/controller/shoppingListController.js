@@ -1,6 +1,39 @@
 var ShoppingList = require('../model/shoppingListModel.js');
 var Product = require('../model/productModel.js');
 
+const fetchAll = ({
+    orderBy = ShoppingList.sortableColumns[0],
+    sort = 'ASC',
+    page = 0,
+    searchField = ''
+}, res) => {
+    console.log(`Fetching shopping list with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
+    ShoppingList.getAll(orderBy, sort, page, searchField, function (err, data) {
+        if (err) {
+            res.send(err);
+        } else {
+            const returnObject = {
+                data: data.map((item) => ({
+                    id: item.id,
+                    product: {
+                        id: item.productId,
+                        description: item.productDescription,
+                        created: item.productCreated,
+                        category: {
+                            id: item.categoryId,
+                            description: item.categoryDescription,
+                            created: item.categoryCreated
+                        }
+                    }
+                }))
+            };
+
+            res.send(returnObject);
+        }
+    });
+};
+
+
 exports.list_all = function (req, res) {
     let orderBy = req.query.orderBy;
     if (!ShoppingList.sortableColumns.includes(orderBy)) {
@@ -15,21 +48,7 @@ exports.list_all = function (req, res) {
     const page = req.query.page || 0;
     const searchField = req.query.searchField || '';
 
-    ShoppingList.getAll(orderBy, sort, page, searchField, function (err, task) {
-        if (err) {
-            res.send(err);
-        } else {
-            ShoppingList.getTotalCount(searchField, function (err, countResult) {
-                const returnObject = {
-                    totalCount: err ? 0 : countResult,
-                    count: task.length,
-                    data: task
-                }
-
-                res.send(returnObject);
-            });
-        }
-    });
+    return fetchAll({ orderBy, sort, page, searchField }, res);
 };
 
 exports.create = function (req, res) {
@@ -43,7 +62,8 @@ exports.create = function (req, res) {
             if (err) {
                 res.status(400).send(err);
             }
-            res.json(task);
+
+            return fetchAll({}, res);
         });
     }
 };
@@ -55,6 +75,7 @@ exports.delete = function (req, res) {
         if (err) {
             res.status(409).send(err);
         }
-        res.send(task);
+
+        return fetchAll({}, res);
     });
 };

@@ -1,19 +1,21 @@
 var sql = require('../../sql/sql');
 const CONSTANTS = require('../constants/sql');
+var PlaceCategory = require('../model/placeCategoryModel.js');
 
 //Task object constructor
 var Place = function (place) {
-    this.id = place.id;
     this.place = place.place;
+    this.id = place.id;
     this.description = place.description;
-    this.categoryId = place.category_id;
+    this.created = place.created;
+    this.category = new PlaceCategory(place.category);
 };
 
 const now = new Date();
 
 Place.sortableColumns = [
     'description',
-    'category_description',
+    'category',
     'created',
     'id'
 ];
@@ -23,7 +25,7 @@ Place.create = function (newItems, result) {
         return [
             item.id,
             item.description,
-            item.categoryId
+            item.category.id
         ]
     });
 
@@ -85,21 +87,15 @@ Place.getAllNames = async function (result) {
 
 Place.getAll = async function (orderBy, sort, page, searchField, result) {
     const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
-    const ascQuery = `SELECT places.*, places_categories.description as category_description FROM places
+    const query = `SELECT places.id, places.description, places.created, places.category_id as categoryId,
+        places_categories.description as categoryDescription, places_categories.created as categoryCreated FROM places
         INNER JOIN places_categories ON (places.category_id = places_categories.id)
         WHERE places.description LIKE ? OR places_categories.description LIKE ?
-        ORDER BY ?? ASC
+        ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}
         LIMIT ?, ?`;
 
-    const descQuery = `SELECT places.*, places_categories.description as category_description FROM places
-        INNER JOIN places_categories ON (places.category_id = places_categories.id)
-        WHERE places.description LIKE ? OR places_categories.description LIKE ?
-        ORDER BY ?? DESC
-        LIMIT ?, ?`;
-
-    const query = sort === 'ASC' ? ascQuery : descQuery;
-    sql.query(query, [`%${searchField}%`, `%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
-
+    const mappedOrderBy = orderBy === 'category' ? 'categoryDescription' : orderBy;
+    sql.query(query, [`%${searchField}%`, `%${searchField}%`, mappedOrderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);

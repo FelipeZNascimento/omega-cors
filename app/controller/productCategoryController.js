@@ -1,19 +1,11 @@
 var ProductCategory = require('../model/productCategoryModel.js');
 
-exports.list_all = function (req, res) {
-    let orderBy = req.query.orderBy;
-    if (!ProductCategory.sortableColumns.includes(orderBy)) {
-        orderBy = ProductCategory.sortableColumns[0];
-    }
-
-    let sort = req.query.sort || 'ASC';
-    sort = sort.toUpperCase() === 'DESC'
-        ? 'DESC'
-        : 'ASC';
-
-    const page = req.query.page || 0;
-    const searchField = req.query.searchField || '';
-
+const fetchAll = ({
+    orderBy = ProductCategory.sortableColumns[0],
+    sort = 'ASC',
+    page = 0,
+    searchField = ''
+}, res) => {
     console.log(`Fetching product categories with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
     ProductCategory.getAll(orderBy, sort, page, searchField, function (err, task) {
         if (err) {
@@ -30,6 +22,23 @@ exports.list_all = function (req, res) {
             })
         }
     });
+};
+
+exports.list_all = function (req, res) {
+    let orderBy = req.query.orderBy;
+    if (!ProductCategory.sortableColumns.includes(orderBy)) {
+        orderBy = ProductCategory.sortableColumns[0];
+    }
+
+    let sort = req.query.sort || 'ASC';
+    sort = sort.toUpperCase() === 'DESC'
+        ? 'DESC'
+        : 'ASC';
+
+    const page = req.query.page || 0;
+    const searchField = req.query.searchField || '';
+
+    return fetchAll({ orderBy, sort, page, searchField }, res);
 };
 
 exports.list_all_names = function (req, res) {
@@ -54,7 +63,20 @@ exports.create = function (req, res) {
             if (err) {
                 res.status(400).send(err);
             } else {
-                res.json(task);
+                let orderBy = req.query.orderBy;
+                if (!ProductCategory.sortableColumns.includes(orderBy)) {
+                    orderBy = ProductCategory.sortableColumns[0];
+                }
+
+                let sort = req.query.sort || 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
@@ -69,49 +91,29 @@ exports.delete = function (req, res) {
             if (err) {
                 res.status(409).send(err);
             } else {
-                res.json({ message: 'Product category successfully deleted.' });
+                let orderBy = req.query.orderBy;
+                if (!ProductCategory.sortableColumns.includes(orderBy)) {
+                    orderBy = ProductCategory.sortableColumns[0];
+                }
+
+                let sort = req.query.sort || 'ASC';
+                sort = sort.toUpperCase() === 'DESC'
+                    ? 'DESC'
+                    : 'ASC';
+
+                const page = req.query.page || 0;
+                const searchField = req.query.searchField || '';
+
+                return fetchAll({ orderBy, sort, page, searchField }, res);
             }
         });
     }
 };
-
-// exports.create_a_task = function (req, res) {
-//     var new_task = new ProductCategory(req.body);
-
-//     //handles null error 
-//     if (!new_task.task || !new_task.status) {
-//         res.status(400).send({ error: true, message: 'Please provide task/status' });
-//     }
-//     else {
-
-//         ProductCategory.createTask(new_task, function (err, task) {
-//             if (err)
-//                 res.send(err);
-//             res.json(task);
-//         });
-//     }
-// };
-
-// exports.read_a_task = function (req, res) {
-//     ProductCategory.getTaskById(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json(task);
-//     });
-// };
 
 // exports.update_a_task = function (req, res) {
 //     ProductCategory.updateById(req.params.taskId, new Task(req.body), function (err, task) {
 //         if (err)
 //             res.send(err);
 //         res.json(task);
-//     });
-// };
-
-// exports.delete_a_task = function (req, res) {
-//     ProductCategory.remove(req.params.taskId, function (err, task) {
-//         if (err)
-//             res.send(err);
-//         res.json({ message: 'Task successfully deleted' });
 //     });
 // };

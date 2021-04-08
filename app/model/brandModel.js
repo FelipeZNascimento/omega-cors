@@ -72,17 +72,11 @@ Brand.getAllNames = async function (result) {
 
 Brand.getAll = function (orderBy, sort, page, searchField, result) {
     const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
-    const ascQuery = `SELECT * FROM brands
+    const query = `SELECT id, description, created FROM brands
         WHERE description LIKE ?
-        ORDER BY ?? ASC
+        ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}
         LIMIT ?, ?`;
 
-    const descQuery = `SELECT * FROM brands
-        WHERE description LIKE ?
-        ORDER BY ?? DESC
-        LIMIT ?, ?`;
-
-    const query = sort === 'ASC' ? ascQuery : descQuery;
     sql.query(query, [`%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
         if (err) {
             console.log("error: ", err);
