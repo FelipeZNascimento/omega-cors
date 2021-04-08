@@ -71,13 +71,16 @@ Brand.getAllNames = async function (result) {
 };
 
 Brand.getAll = function (orderBy, sort, page, searchField, result) {
-    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+    const firstElement = page === 'null' ? 0 : page * CONSTANTS.PAGINATION_OFFSET;
+    const paginationOffset = page === 'null' ? 9999999999999 : CONSTANTS.PAGINATION_OFFSET;
+    const description = searchField || '';
+
     const query = `SELECT id, description, created FROM brands
         WHERE description LIKE ?
         ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}
         LIMIT ?, ?`;
 
-    sql.query(query, [`%${searchField}%`, orderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+    sql.query(query, [`%${description}%`, orderBy, firstElement, paginationOffset], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);

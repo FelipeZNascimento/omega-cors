@@ -7,7 +7,6 @@ const fetchAll = ({
     searchField = ''
 }, res) => {
     console.log(`Fetching brands with orderBy = ${orderBy}, sort: ${sort}, page: ${page}, searchField: ${searchField}`);
-
     Brand.getAll(orderBy, sort, page, searchField, function (err, task) {
         if (err) {
             res.status(400).send(err);
