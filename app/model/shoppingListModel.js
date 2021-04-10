@@ -86,7 +86,7 @@ ShoppingList.getAll = function (orderBy, sort, page, searchField, result) {
 };
 
 ShoppingList.delete = function (toBeDeletedId, result) {
-    if (toBeDeletedId === 'null') {
+    if (toBeDeletedId === 'all') {
         sql.query("TRUNCATE shopping_list", function (err, res) {
             if (err) {
                 console.log("error: ", err);
