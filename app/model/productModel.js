@@ -62,9 +62,10 @@ Product.getById = function (productId, result) {
 };
 
 Product.getHistoryById = function (productId, orderBy, sort, result) {
-    const query = `SELECT purchase_details.id, purchase_details.price, purchase_details.discount, purchase_details.unit,
+    const query = `SELECT purchase_details.id, purchase_details.price, purchase_details.discount, purchase_details.unit, purchase_details.details,
         products.description as productDescription, products.id as productId, products.created as productCreated, 
-        products_categories.id as productCategoryId, products_categories.description as productCategoryDescription, products_categories.created as productCategoryCreated,
+        products_categories.id as productCategoryId, products_categories.description as productCategoryDescription,
+        products_categories.created as productCategoryCreated,
         brands.id as brandId, brands.description as brandDescription, brands.created as brandCreated, 
         places.id as placeId, places.description as placeDescription, places.created as placeCreated,
         places_categories.id as placeCategoryId, places_categories.description as placeCategoryDescription, places_categories.created as placeCategoryCreated,

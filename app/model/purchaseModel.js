@@ -23,9 +23,21 @@ const now = new Date();
 
 Purchase.sortableColumns = [
     'description',
-    'category_description',
+    'category',
     'price'
 ];
+
+const mapSortables = (orderBy) => {
+    switch(orderBy) {
+        case 'category':
+            return 'categoryDescription';
+        case 'price':
+            return 'purchase_details.price';
+        default:
+            return `products.${orderBy}`;
+    }
+};
+
 
 createPurchaseDetails = function (newPurchase, insertId, result) {
     if (!insertId) {
@@ -84,7 +96,7 @@ Purchase.getDetailsById = function (purchaseId, orderBy, sort, result) {
         WHERE purchase_details.purchase_id = ?
         ORDER BY ?? ${sort === 'ASC' ? 'ASC' : 'DESC'}`;
 
-    const mappedOrderBy = orderBy === 'price' ? 'purchase_details.price' : `products.${orderBy}`;
+    const mappedOrderBy = mapSortables(orderBy);
     sql.query(query, [purchaseId, mappedOrderBy], function (err, res) {
         if (err) {
             console.log("error: ", err);

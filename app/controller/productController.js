@@ -157,6 +157,7 @@ exports.get_history_by_id = function (req, res) {
                                 price: singleData.price,
                                 discount: singleData.discount,
                                 unit: singleData.unit,
+                                details: singleData.details,
                                 date: singleData.date,
                                 brand: singleData.brandId ? {
                                     id: singleData.brandId,
