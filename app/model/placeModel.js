@@ -86,7 +86,10 @@ Place.getAllNames = async function (result) {
 };
 
 Place.getAll = async function (orderBy, sort, page, searchField, result) {
-    const firstElement = page * CONSTANTS.PAGINATION_OFFSET;
+    const firstElement = page === 'null' ? 0 : page * CONSTANTS.PAGINATION_OFFSET;
+    const paginationOffset = page === 'null' ? 9999999999999 : CONSTANTS.PAGINATION_OFFSET;
+    const description = searchField || '';
+
     const query = `SELECT places.id, places.description, places.created, places.category_id as categoryId,
         places_categories.description as categoryDescription, places_categories.created as categoryCreated FROM places
         INNER JOIN places_categories ON (places.category_id = places_categories.id)
@@ -95,7 +98,7 @@ Place.getAll = async function (orderBy, sort, page, searchField, result) {
         LIMIT ?, ?`;
 
     const mappedOrderBy = orderBy === 'category' ? 'categoryDescription' : orderBy;
-    sql.query(query, [`%${searchField}%`, `%${searchField}%`, mappedOrderBy, firstElement, CONSTANTS.PAGINATION_OFFSET], function (err, res) {
+    sql.query(query, [`%${description}%`, `%${searchField}%`, mappedOrderBy, firstElement, paginationOffset], function (err, res) {
         if (err) {
             console.log("error: ", err);
             result(err, null);
