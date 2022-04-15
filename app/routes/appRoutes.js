@@ -69,4 +69,8 @@ module.exports = function (app) {
         .post(purchaseController.create);
     app.route('/shopping/purchase/:itemId')
         .get(purchaseController.get_details_by_id)
+
+    app.use(function (req, res) {
+        res.sendStatus(404);
+    });
 };
